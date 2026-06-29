@@ -1,0 +1,12 @@
+{
+  "name": "zync-client",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node run.mjs dev",
+    "build": "next build",
+    "start": "node run.mjs start",
+    "lint": "next lint"
+  }
+}
