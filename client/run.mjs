@@ -3,13 +3,40 @@
  * Replaces shell-only constructs (fuser, NODE_ENV=...).
  */
 import { spawn } from "node:child_process";
+import fs from "node:fs";
 import net from "node:net";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const repoRoot = path.resolve(__dirname, "..");
 const mode = process.argv[2] === "start" ? "start" : "dev";
 const port = parseInt(process.env.PORT ?? "3000", 10);
+
+function loadEnvFile(filePath) {
+  if (!fs.existsSync(filePath)) return;
+  const text = fs.readFileSync(filePath, "utf8");
+  for (const line of text.split(/\r?\n/)) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith("#")) continue;
+    const eq = trimmed.indexOf("=");
+    if (eq === -1) continue;
+    const key = trimmed.slice(0, eq).trim();
+    let value = trimmed.slice(eq + 1).trim();
+    if (!key || process.env[key] !== undefined) continue;
+    if (
+      (value.startsWith('"') && value.endsWith('"')) ||
+      (value.startsWith("'") && value.endsWith("'"))
+    ) {
+      value = value.slice(1, -1);
+    }
+    process.env[key] = value;
+  }
+}
+
+loadEnvFile(path.join(repoRoot, ".env.local"));
+loadEnvFile(path.join(repoRoot, ".env"));
+loadEnvFile(path.join(__dirname, ".env.local"));
 
 function isPortFree(p) {
   return new Promise((resolve) => {

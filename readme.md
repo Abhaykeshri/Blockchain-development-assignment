@@ -8,6 +8,8 @@ This assessment is for **Web3 / dApp engineers** — people who wire wallets, co
 
 Focus on quality over completeness. Submit what you have when time is up.
 
+**Task 1 mint page:** `http://localhost:3000/buy`
+
 ---
 
 ## Time Consideration
@@ -42,6 +44,45 @@ npm run dev
 ```
 
 **Wallet setup:** Add Hardhat Local (`http://127.0.0.1:8545`, chain ID `31337`) in MetaMask and import a Hardhat account private key from the `npm run chain` output so you have test ETH.
+
+## Quick Start
+
+1. Run `npm install`.
+2. Open Terminal 1 and run `npm run chain`.
+3. Open Terminal 2 and run `npm run deploy`.
+4. Copy the deployed addresses from the deploy output into `.env` if needed.
+5. Run `npm run test:contracts`.
+6. Run `npm run dev`.
+7. Open `http://localhost:3000/buy` for Task 1 and `http://localhost:3000/swap` for Task 4.
+
+## How To Get Swap Addresses
+
+If you are using this repo locally, do **not** invent `SWAP_ROUTER_ADDRESS` and `WETH_ADDRESS`.
+Get them from the `npm run deploy` terminal output:
+
+- `ZyncToken:` -> use as `ZYNC_TOKEN_ADDRESS`
+- `MockSwapRouter:` -> use as `SWAP_ROUTER_ADDRESS`
+- `MockWETH9:` -> use as `WETH_ADDRESS`
+
+For the current local deployment, the addresses are also written in `.env`.
+
+If you redeploy later, copy the new addresses from the terminal output into `.env` again.
+
+## Implementation Notes
+
+- The `Buy` page now hosts the ZYNC token console: mint, burn, and transfer all wait for receipts and refresh token balance / total supply after confirmation.
+- If MetaMask is on the wrong network, the app will try `wallet_switchEthereumChain` first and fall back to `wallet_addEthereumChain` for Hardhat Local (`31337`).
+- The `/swap` page now executes the API quote directly on-chain. It will approve ZYNC for the router when allowance is too low, then send the router transaction and wait for the receipt.
+- Swap execution requires `SWAP_ROUTER_ADDRESS` and `WETH_ADDRESS`. If either is missing, the page shows an explicit setup message instead of guessing.
+- The market/order API routes are marked dynamic so the production build does not prerender runtime-only engine singletons.
+- Verified locally with `npm run test:contracts` and `npm run client:build` after installing dependencies.
+
+### Suggested local setup
+
+1. Start the chain with `npm run chain`.
+2. Deploy the token with `npm run deploy` and copy the printed address into `.env` as `ZYNC_TOKEN_ADDRESS`.
+3. Add the Hardhat network to MetaMask if it is not already present.
+4. If you want the swap page to execute, also set `SWAP_ROUTER_ADDRESS` and `WETH_ADDRESS`.
 
 ---
 
@@ -209,6 +250,92 @@ You are also evaluated on:
 - Consistency with existing `WalletContext`, components, and Tailwind UI
 - Contract tests where you change Solidity
 - Clear commit history and an updated README with run notes / tradeoffs
+
+---
+
+## How To Run
+
+Run the project in this order:
+
+```bash
+npm install
+```
+
+Terminal 1:
+
+```bash
+npm run chain
+```
+
+Terminal 2:
+
+```bash
+npm run deploy
+```
+
+Terminal 3:
+
+```bash
+npm run test:contracts
+```
+
+Terminal 4:
+
+```bash
+npm run dev
+```
+
+Open these pages in the browser:
+
+- `http://localhost:3000/buy` for Task 1 mint / burn / transfer
+- `http://localhost:3000/swap` for Task 4 swap execution
+
+### MetaMask Setup
+
+1. Add the Hardhat network in MetaMask:
+   - RPC URL: `http://127.0.0.1:8545`
+   - Chain ID: `31337`
+   - Currency symbol: `ETH`
+2. Import one of the private keys printed by `npm run chain` so the account has test ETH.
+3. Connect MetaMask on the app.
+4. If you are on the wrong network, the app will prompt a switch to Hardhat Local automatically.
+
+### How To Mint
+
+1. Go to `http://localhost:3000/buy`
+2. Connect MetaMask.
+3. Enter an ETH amount in the Mint panel.
+4. Click `Mint with ETH`.
+5. Confirm the transaction in MetaMask.
+6. Wait for the receipt.
+7. The page refreshes your ZYNC balance and total supply after confirmation.
+
+### Tradeoffs / Task 4 Router Setup
+
+Swap execution depends on:
+
+- `SWAP_ROUTER_ADDRESS`
+- `WETH_ADDRESS`
+
+For local testing I used the mock router and WETH addresses printed by `npm run deploy`. If those variables are missing, the swap page still loads and shows that swap execution is not configured yet instead of crashing.
+
+If I had more time, I would:
+
+- Add stronger parsing for revert reasons and RPC errors in swap execution.
+- Add a dedicated recent-activity panel for mint, burn, transfer, and swap hashes.
+- Add more end-to-end tests for MetaMask rejection and wrong-network switching.
+- Replace the mock router setup with a full local Uniswap deployment if the environment requires it.
+- Add a helper that writes deployed addresses into `.env` automatically.
+
+### Proof / Evidence
+
+I captured local proof of the completed flows in the `artifacts/` folder:
+
+- Task 2 and Task 3 screenshot: [artifacts/2and3.png](./artifacts/2and3.png)
+- Task 1 demo video: [artifacts/1.mp4](./artifacts/1.mp4)
+- Task 4 demo video: [artifacts/4.mp4](./artifacts/4.mp4)
+
+The screenshot shows the mint, burn, and transfer UI after successful confirmations. The videos show the working flow in the browser.
 
 ---
 

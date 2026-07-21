@@ -9,5 +9,8 @@ export function GET() {
     rpc_url:             appConfig.rpc_url,
     zync_token_address:  appConfig.zync_token_address,
     aurelexa_tagline:    appConfig.aurelexa_tagline,
+    swap_router_address: appConfig.swap_router_address,
+    weth_address:        appConfig.weth_address,
+    swap_deadline_secs:  appConfig.swap_deadline_secs,
   });
 }

@@ -14,6 +14,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   const navLinks = [
     { href: "/swap", label: "Swap", exact: true },
+    { href: "/buy", label: "Buy", exact: true },
     { href: "/markets", label: "Markets", exact: false },
   ];
 

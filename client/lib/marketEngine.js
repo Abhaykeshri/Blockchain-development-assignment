@@ -92,7 +92,7 @@ export class MarketEngine extends EventEmitter {
 
   /** Call once from server.js after the HTTP server has started. */
   connectBinance() {
-    this._connectBinance();
+    void this._connectBinance();
   }
 
   _initMarkets() {
@@ -121,16 +121,21 @@ export class MarketEngine extends EventEmitter {
     }
   }
 
-  _connectBinance() {
+  async _connectBinance() {
     // Only connect during actual server runtime, not during Next.js build/static analysis
     if (process.env.NEXT_PHASE === "phase-production-build") return;
 
-    let WS;
     try {
-      WS = globalThis.WebSocket ?? require("ws").WebSocket;
+      if (!globalThis.WebSocket) {
+        const wsMod = await import("ws");
+        globalThis.WebSocket = wsMod.WebSocket;
+      }
     } catch {
       return;
     }
+
+    const WS = globalThis.WebSocket;
+    if (!WS) return;
 
     const symbols = Object.values(BINANCE_MAP);
     const streams = symbols.map((s) => `${s}@miniTicker`).join("/");

@@ -15,6 +15,53 @@ export const zyncAbi = [
   },
   {
     type: "function",
+    name: "burn",
+    stateMutability: "nonpayable",
+    inputs: [{ name: "amount", type: "uint256", internalType: "uint256" }],
+    outputs: [],
+  },
+  {
+    type: "function",
+    name: "burnFrom",
+    stateMutability: "nonpayable",
+    inputs: [
+      { name: "account", type: "address", internalType: "address" },
+      { name: "amount", type: "uint256", internalType: "uint256" },
+    ],
+    outputs: [],
+  },
+  {
+    type: "function",
+    name: "approve",
+    stateMutability: "nonpayable",
+    inputs: [
+      { name: "spender", type: "address", internalType: "address" },
+      { name: "amount", type: "uint256", internalType: "uint256" },
+    ],
+    outputs: [{ name: "", type: "bool", internalType: "bool" }],
+  },
+  {
+    type: "function",
+    name: "allowance",
+    stateMutability: "view",
+    inputs: [
+      { name: "owner", type: "address", internalType: "address" },
+      { name: "spender", type: "address", internalType: "address" },
+    ],
+    outputs: [{ name: "", type: "uint256", internalType: "uint256" }],
+  },
+  {
+    type: "function",
+    name: "transfer",
+    stateMutability: "nonpayable",
+    inputs: [
+      { name: "to", type: "address", internalType: "address" },
+      { name: "amount", type: "uint256", internalType: "uint256" },
+    ],
+    outputs: [{ name: "", type: "bool", internalType: "bool" }],
+  },
+  {
+    type: "function",
     name: "MAX_SUPPLY",
     stateMutability: "view",
     inputs: [],
@@ -54,5 +101,14 @@ export const zyncAbi = [
     stateMutability: "view",
     inputs: [],
     outputs: [{ name: "", type: "string", internalType: "string" }],
+  },
+  {
+    type: "event",
+    name: "Burned",
+    inputs: [
+      { name: "from", type: "address", indexed: true, internalType: "address" },
+      { name: "amount", type: "uint256", indexed: false, internalType: "uint256" },
+    ],
+    anonymous: false,
   },
 ] as const;

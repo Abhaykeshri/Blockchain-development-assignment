@@ -14,6 +14,8 @@ contract ZyncToken is ERC20, Ownable, ReentrancyGuard {
     /// Price in wei for 1e18 wei of tokens (one full ZYNC with 18 decimals).
     uint256 public mintPriceWei;
 
+    event Burned(address indexed from, uint256 amount);
+
     error CapExceeded();
     error ZeroAmount();
 
@@ -29,6 +31,19 @@ contract ZyncToken is ERC20, Ownable, ReentrancyGuard {
     function mintTo(address to, uint256 amount) external onlyOwner {
         if (totalSupply() + amount > MAX_SUPPLY) revert CapExceeded();
         _mint(to, amount);
+    }
+
+    /// @notice Burn caller tokens.
+    function burn(uint256 amount) external {
+        _burn(msg.sender, amount);
+        emit Burned(msg.sender, amount);
+    }
+
+    /// @notice Burn tokens from another account using allowance.
+    function burnFrom(address account, uint256 amount) external {
+        _spendAllowance(account, msg.sender, amount);
+        _burn(account, amount);
+        emit Burned(account, amount);
     }
 
     /// @notice Buy ZYNC with native currency on the same chain.

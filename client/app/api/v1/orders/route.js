@@ -3,6 +3,9 @@ import { getMarketEngine, getMatchingEngine } from "../../../../lib/engines.js";
 import { quoteDp, formatPrice } from "../../../../lib/merge.js";
 import { MatchError } from "../../../../lib/matchingEngine.js";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 function quoteDecimalsForQuote(quote) {
   switch (quote) {
     case "ETH": return 8;
@@ -30,10 +33,22 @@ export async function GET(req) {
   const { searchParams } = new URL(req.url);
   const marketId = searchParams.get("market_id") ?? undefined;
   const openOnly = searchParams.get("open_only") === "true" || searchParams.get("open_only") === "1";
-  const list = await getMatchingEngine().listOrders(marketId, openOnly);
+  let matching;
+  try {
+    matching = getMatchingEngine();
+  } catch {
+    return new NextResponse("MatchingEngine not ready", { status: 503 });
+  }
+  const list = await matching.listOrders(marketId, openOnly);
   let decimals = 8;
   if (marketId) {
-    const d = getMarketEngine().detail(marketId.trim());
+    let marketEngine;
+    try {
+      marketEngine = getMarketEngine();
+    } catch {
+      return new NextResponse("MarketEngine not ready", { status: 503 });
+    }
+    const d = marketEngine.detail(marketId.trim());
     decimals = d ? quoteDecimalsForQuote(d.quote) : 4;
   }
   return NextResponse.json({ orders: list.map((o) => orderToJson(o, decimals)) });
@@ -59,13 +74,20 @@ export async function POST(req) {
   }
 
   const mid = String(body.market_id ?? "").trim();
-  const d = getMarketEngine().detail(mid);
+  let marketEngine;
+  try {
+    marketEngine = getMarketEngine();
+  } catch {
+    return new NextResponse("MarketEngine not ready", { status: 503 });
+  }
+  const d = marketEngine.detail(mid);
   if (!d) return new NextResponse("unknown market_id", { status: 404 });
   const decimals = quoteDecimalsForQuote(d.quote);
   const now = Math.floor(Date.now() / 1000);
 
   try {
-    const { order, trades } = await getMatchingEngine().submit(mid, side, orderType, price, size, now);
+    const matching = getMatchingEngine();
+    const { order, trades } = await matching.submit(mid, side, orderType, price, size, now);
     return NextResponse.json({ order: orderToJson(order, decimals), trades: trades.map((t) => tradeToJson(t, decimals)) });
   } catch (e) {
     if (e instanceof MatchError) {

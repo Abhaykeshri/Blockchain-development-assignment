@@ -2,6 +2,9 @@ import { NextResponse } from "next/server";
 import { getMatchingEngine } from "../../../../../lib/engines.js";
 import { MatchError } from "../../../../../lib/matchingEngine.js";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export async function DELETE(_req, { params }) {
   let id = params.id?.trim();
   if (!id || !/^[0-9a-f-]{36}$/i.test(id)) {
@@ -9,7 +12,8 @@ export async function DELETE(_req, { params }) {
   }
   id = id.toLowerCase();
   try {
-    await getMatchingEngine().cancel(id);
+    const matching = getMatchingEngine();
+    await matching.cancel(id);
     return new NextResponse(null, { status: 204 });
   } catch (e) {
     if (e instanceof MatchError) {
